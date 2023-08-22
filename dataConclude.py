@@ -25,7 +25,14 @@ groups = file.groupby(file['hours_since_start'].astype(int))
 output_path = "D:/resource/chunmei/data/output/"
 # 根据时间戳，创建并导出NC文件
 for hour, group_df in groups:
-    nc_file_name = os.path.join(output_path, f'{int(hour)}.nc')
+    timestamp = start_time + datetime.timedelta(hours=int(hour))
+    year = timestamp.year
+    month = timestamp.month
+    day = timestamp.day
+    hour = timestamp.hour
+    timestamp = datetime.datetime(year, month, day, hour).strftime('%Y_%m_%d_%H')
+
+    nc_file_name = os.path.join(output_path, f'{"RF_"+timestamp}.nc')
     # 创建NC文件
     dataset = Dataset(nc_file_name, 'w', format = 'NETCDF4')
 
@@ -41,6 +48,14 @@ for hour, group_df in groups:
     lat_var = dataset.createVariable('lat', 'f4', ('lat',))
     lon_var = dataset.createVariable('lon', 'f4', ('lon',))
     co2_var = dataset.createVariable('co2', 'f4', ('lat','lon'))
+
+    # 设置变量属性
+    lat_var.units = 'degrees_north'
+    lat_var.long_name = 'latitude'
+    lon_var.units = 'degrees_east'
+    lon_var.long_name = 'longitude'
+    co2_var.units = 'ppm'
+    co2_var.coordinates = 'lat lon'
 
     # 设置变量值
     # time_var[:] = np.zeros(len(group_df))
